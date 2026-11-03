@@ -1,0 +1,67 @@
+name: Build Python wheels
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  wheel:
+    name: ${{ matrix.os }} / Python ${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, windows-2022, macos-14]
+        python: ["3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.7"
+          cache: true
+      - name: Install Linux build tools
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake
+      - name: Install Windows MinGW build tools
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-make
+      - name: Install macOS build tools
+        if: runner.os == 'macOS'
+        run: |
+          brew update
+          brew install cmake
+      - name: Build wheel
+        run: |
+          python -m pip install --upgrade pip build wheel
+          python -m pip wheel . --no-deps --no-build-isolation --wheel-dir wheelhouse
+      - name: Install wheel and verify import
+        shell: python
+        run: |
+          import glob
+          import subprocess
+          import sys
+
+          wheels = glob.glob("wheelhouse/*.whl")
+          if len(wheels) != 1:
+              raise SystemExit(f"Expected one wheel, found: {wheels}")
+          subprocess.check_call([sys.executable, "-m", "pip", "install", "--no-deps", wheels[0]])
+
+          if "${{ github.repository }}".endswith("tun2socks-python"):
+              import tun2socks
+              assert callable(tun2socks.startFromArgs)
+          else:
+              import hysteria2
+              assert callable(hysteria2.startFromJSON)
