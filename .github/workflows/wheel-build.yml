@@ -45,23 +45,10 @@ jobs:
           brew install cmake
       - name: Build wheel
         run: |
-          python -m pip install --upgrade pip build wheel
-          python -m pip wheel . --no-deps --no-build-isolation --wheel-dir wheelhouse
+          python -m pip install --upgrade pip
+          python -m pip wheel . --no-deps --wheel-dir wheelhouse
       - name: Install wheel and verify import
-        shell: python
+        shell: bash
         run: |
-          import glob
-          import subprocess
-          import sys
-
-          wheels = glob.glob("wheelhouse/*.whl")
-          if len(wheels) != 1:
-              raise SystemExit(f"Expected one wheel, found: {wheels}")
-          subprocess.check_call([sys.executable, "-m", "pip", "install", "--no-deps", wheels[0]])
-
-          if "${{ github.repository }}".endswith("tun2socks-python"):
-              import tun2socks
-              assert callable(tun2socks.startFromArgs)
-          else:
-              import hysteria2
-              assert callable(hysteria2.startFromJSON)
+          python -m pip install --no-deps wheelhouse/*.whl
+          python -c "import hysteria2; assert callable(hysteria2.startFromJSON)"
