@@ -50,5 +50,6 @@ jobs:
       - name: Install wheel and verify import
         shell: bash
         run: |
-          python -m pip install --no-deps wheelhouse/*.whl
-          python -c "import hysteria2; assert callable(hysteria2.startFromJSON)"
+          python -m pip install --no-deps "$GITHUB_WORKSPACE"/wheelhouse/*.whl
+          cd "$RUNNER_TEMP"
+          python -c "import hysteria2; assert callable(hysteria2.startFromJSON); print(hysteria2.__file__)"
