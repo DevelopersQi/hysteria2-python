@@ -52,6 +52,7 @@ class BuildHysteria2(build_ext):
         cmake_args = [
             "cmake", "-S", str(ROOT_DIR), "-B", str(cmake_dir),
             "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
             f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY={extension_path.parent.as_posix()}",
             f"-DHYSTERIA2_ARCHIVE={archive_path.as_posix()}",
             f"-DHYSTERIA2_INCLUDE_DIR={go_dir.as_posix()}",
