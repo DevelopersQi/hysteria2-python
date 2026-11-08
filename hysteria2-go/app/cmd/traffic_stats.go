@@ -138,8 +138,6 @@ func startLocalTrafficStatsWriter(path string, counters *localTrafficCounters) f
 			return
 		}
 
-		// Windows rename does not replace an existing destination.
-		_ = os.Remove(path)
 		_ = os.Rename(tempPath, path)
 	}
 

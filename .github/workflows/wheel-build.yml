@@ -43,6 +43,9 @@ jobs:
         run: |
           brew update
           brew install cmake
+      - name: Test local traffic accounting
+        run: go test ./cmd
+        working-directory: hysteria2-go/app
       - name: Build wheel
         run: |
           python -m pip install --upgrade pip

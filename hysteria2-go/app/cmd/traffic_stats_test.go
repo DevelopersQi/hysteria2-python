@@ -69,6 +69,9 @@ func TestLocalTrafficWrappersCountProxyPayload(t *testing.T) {
 
 func TestLocalTrafficWriterFlushesFinalSnapshot(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "traffic.json")
+	if err := os.WriteFile(path, []byte("old snapshot"), 0600); err != nil {
+		t.Fatal(err)
+	}
 	counters := &localTrafficCounters{}
 	counters.uplink.Store(123)
 	counters.downlink.Store(456)
