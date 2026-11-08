@@ -68,6 +68,7 @@ type clientConfig struct {
 	Bandwidth     clientConfigBandwidth `mapstructure:"bandwidth"`
 	FastOpen      bool                  `mapstructure:"fastOpen"`
 	Lazy          bool                  `mapstructure:"lazy"`
+	FuriousStatsFile string `mapstructure:"furiousStatsFile"`
 	SOCKS5        *socks5Config         `mapstructure:"socks5"`
 	HTTP          *httpConfig           `mapstructure:"http"`
 	TCPForwarding []tcpForwardingEntry  `mapstructure:"tcpForwarding"`
@@ -476,6 +477,13 @@ func StartFromJSON(json string) {
 		}, config.Lazy)
 	if err != nil {
 		logger.Fatal("failed to initialize client", zap.Error(err))
+	}
+
+	if config.FuriousStatsFile != "" {
+		counters := &localTrafficCounters{}
+		c = &localTrafficStatsClient{Client: c, counters: counters}
+		stopStatsWriter := startLocalTrafficStatsWriter(config.FuriousStatsFile, counters)
+		defer stopStatsWriter()
 	}
 	defer c.Close()
 
