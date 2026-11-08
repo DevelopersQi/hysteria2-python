@@ -588,6 +588,13 @@ func runClient(cmd *cobra.Command, args []string) {
 	if err != nil {
 		logger.Fatal("failed to initialize client", zap.Error(err))
 	}
+
+	if config.FuriousStatsFile != "" {
+		counters := &localTrafficCounters{}
+		c = &localTrafficStatsClient{Client: c, counters: counters}
+		stopStatsWriter := startLocalTrafficStatsWriter(config.FuriousStatsFile, counters)
+		defer stopStatsWriter()
+	}
 	defer c.Close()
 
 	uri := config.URI()
